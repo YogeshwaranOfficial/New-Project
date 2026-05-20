@@ -14,10 +14,17 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.5"
+    "lint-staged": "^17.0.5",
+    "playwright": "^1.60.0"
   }
 }
