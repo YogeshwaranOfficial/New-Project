@@ -18,6 +18,9 @@ import notFoundHandler from "./middlewares/notFoundHandler.js";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
 
+import routes from "./routes/index.js";
+
+
 const app: Application = express();
 
 
@@ -57,6 +60,9 @@ app.get("/", (_req: Request, res: Response) => {
     message: "Library Management System API running successfully",
   });
 });
+
+
+app.use("/api/v1", routes);
 
 
 
