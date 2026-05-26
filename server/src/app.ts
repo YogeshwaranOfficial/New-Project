@@ -14,6 +14,10 @@ import cookieParser from "cookie-parser";
 
 import env from "./config/env.js";
 
+import notFoundHandler from "./middlewares/NotFoundHandler.js";
+
+import globalErrorHandler from "./middlewares/globalErrorHandler.js";
+
 const app: Application = express();
 
 
@@ -39,7 +43,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
+app.use(notFoundHandler);
 
+app.use(globalErrorHandler);
 
 /* -------------------------------------------------------------------------- */
 /*                                   ROUTES                                   */
