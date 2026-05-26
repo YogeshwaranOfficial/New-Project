@@ -14,7 +14,7 @@ import cookieParser from "cookie-parser";
 
 import env from "./config/env.js";
 
-import notFoundHandler from "./middlewares/NotFoundHandler.js";
+import notFoundHandler from "./middlewares/notFoundHandler.js";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
 
