@@ -7,8 +7,6 @@ import {
 import AppError from "../utils/AppError.js";
 import { verifyToken } from "../utils/jwt.js";
 
-
-
 const auth = (
   req: Request,
   _res: Response,
