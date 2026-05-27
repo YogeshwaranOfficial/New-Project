@@ -18,9 +18,29 @@ import helmetConfig from "./config/helmet.js";
 import corsConfig from "./config/cors.js";
 import "./config/validateEnv.js";
 
-
 const app: Application = express();
 
+/* -------------------------------------------------------------------------- */
+/* GLOBAL MIDDLEWARES                          */
+/* -------------------------------------------------------------------------- */
+
+// 1. Core Security & Rate Limiting Headers
+app.use(helmetConfig); 
+app.use(helmet()); 
+app.use(corsConfig); // Use your custom centralized config safely
+
+// 2. Traffic Flow Rate Limiting
+app.use(rateLimiter);
+
+// 3. Request Logging & Body Parsing
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+/* -------------------------------------------------------------------------- */
+/* API DOCUMENTATION                            */
+/* -------------------------------------------------------------------------- */
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -28,36 +48,7 @@ app.use(
 );
 
 /* -------------------------------------------------------------------------- */
-/*                                 MIDDLEWARES                                */
-/* -------------------------------------------------------------------------- */
-
-app.use(
-  cors({
-    origin: env.FRONTEND_URL,
-    credentials: true,
-  })
-);
-app.use(corsConfig);
-
-app.use(rateLimiter);
-
-app.use(helmetConfig);
-app.use(helmet());
-
-app.use(morgan("dev"));
-
-app.use(express.json());
-
-app.use(express.urlencoded({ extended: true }));
-
-app.use(cookieParser());
-
-app.use(notFoundHandler);
-
-app.use(globalErrorHandler);
-
-/* -------------------------------------------------------------------------- */
-/*                                   ROUTES                                   */
+/* ROUTES                                   */
 /* -------------------------------------------------------------------------- */
 
 app.get("/", (_req: Request, res: Response) => {
@@ -67,9 +58,15 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
-
+// Primary application API routes mounted before error boundaries
 app.use("/api/v1", routes);
 
+/* -------------------------------------------------------------------------- */
+/* ERROR HANDLING BOUNDARIES                      */
+/* -------------------------------------------------------------------------- */
 
+// These must remain at the very bottom of the middleware lifecycle stack!
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 export default app;

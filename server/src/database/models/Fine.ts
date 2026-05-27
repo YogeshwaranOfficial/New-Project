@@ -20,7 +20,7 @@ class Fine extends Model<
 
   declare fine_amount: number;
 
-  declare paid_status: CreationOptional<"PAID" | "UNPAID">; // Defaults to 'UNPAID'
+  declare paid_status: CreationOptional<boolean>;
   declare paid_date: CreationOptional<Date | null>;
 
   declare readonly created_at: CreationOptional<Date>;

@@ -128,7 +128,7 @@ class IssueService {
         issue_id: issue.issue_id,
         delayed_days,
         fine_amount,
-        paid_status: "UNPAID", 
+        paid_status: false, 
       } as CreationAttributes<Fine>);
     }
 

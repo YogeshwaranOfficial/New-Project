@@ -24,7 +24,7 @@ class FineRepository {
   async payFine(fine_id: string) {
     await Fine.update(
       {
-        paid_status: "PAID",
+        paid_status: true,
         paid_date: new Date(),
       },
       {

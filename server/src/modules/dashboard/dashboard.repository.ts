@@ -16,7 +16,7 @@ class DashboardRepository {
       issuedBooks,
       returnedBooks,
       overdueBooks,
-      unpaidFines,
+      fineAggregationResult,
     ] = await Promise.all([
       Book.count(),
 
@@ -53,12 +53,25 @@ class DashboardRepository {
         },
       }),
 
-      Fine.sum("fine_amount", {
+      
+      Fine.findOne({
+        attributes: [
+          [
+            fn("COALESCE", fn("SUM", col("fine_amount")), 0), 
+            "total_unpaid"
+          ]
+        ],
         where: {
-          paid_status: "UNPAID",
+          paid_status: false, // Matches your boolean false column perfectly
         },
+        raw: true,
       }),
     ]);
+
+   
+    const unpaidFines = fineAggregationResult 
+      ? Number((fineAggregationResult as any).total_unpaid) 
+      : 0;
 
     return {
       totalBooks,
@@ -68,7 +81,7 @@ class DashboardRepository {
       issuedBooks,
       returnedBooks,
       overdueBooks,
-      unpaidFines: unpaidFines || 0,
+      unpaidFines,
     };
   }
 
@@ -79,9 +92,7 @@ class DashboardRepository {
         "book_name",
         "lending_count",
       ],
-
       order: [["lending_count", "DESC"]],
-
       limit: 5,
     });
   }
@@ -89,28 +100,22 @@ class DashboardRepository {
   async getRecentIssues() {
     return Issue.findAll({
       limit: 10,
-
       order: [["created_at", "DESC"]],
-
       include: [
         {
           model: Member,
           as: "member",
-
           include: [
             {
               model: User,
               as: "user",
-
               attributes: ["name"],
             },
           ],
         },
-
         {
           model: Book,
           as: "book",
-
           attributes: ["book_name"],
         },
       ],
@@ -123,9 +128,7 @@ class DashboardRepository {
         [fn("DATE_TRUNC", "month", col("created_at")), "month"],
         [fn("SUM", col("fine_amount")), "total"],
       ],
-
       group: ["month"],
-
       order: [[literal("month"), "ASC"]],
     });
   }
