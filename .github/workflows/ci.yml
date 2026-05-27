@@ -1,10 +1,39 @@
-name: Disabled CI
+name: Backend CI Pipeline
 
 on:
-  workflow_dispatch: # Allows manual triggering only, won't run on push
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
-  nothing:
+  backend-ci:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
     steps:
-      - run: echo "Not active yet"
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run TypeScript Build
+        run: npm run build
+
+      - name: Run Tests
+        run: npm run test

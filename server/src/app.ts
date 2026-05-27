@@ -13,6 +13,10 @@ import globalErrorHandler from "./middlewares/globalErrorHandler.js";
 import routes from "./routes/index.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger/swagger.config.js";
+import rateLimiter from "./config/ratelimiter.js";
+import helmetConfig from "./config/helmet.js";
+import corsConfig from "./config/cors.js";
+import "./config/validateEnv.js";
 
 
 const app: Application = express();
@@ -33,7 +37,11 @@ app.use(
     credentials: true,
   })
 );
+app.use(corsConfig);
 
+app.use(rateLimiter);
+
+app.use(helmetConfig);
 app.use(helmet());
 
 app.use(morgan("dev"));
