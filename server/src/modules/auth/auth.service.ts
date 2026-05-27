@@ -68,6 +68,7 @@ export const loginUserService = async (
   const token = generateToken({
     userId: user.uuid,
     gmail: user.gmail,
+    role: user.role,
   });
 
   return {
@@ -75,3 +76,4 @@ export const loginUserService = async (
     user,
   };
 };
+

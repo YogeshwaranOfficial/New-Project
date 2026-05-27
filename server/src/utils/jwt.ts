@@ -2,8 +2,10 @@ import jwt from "jsonwebtoken";
 
 import env from "../config/env.js";
 
+import { JwtUserPayload } from "../types/express/index.js";
+
 export const generateToken = (
-  payload: object
+  payload: JwtUserPayload
 ): string => {
   return jwt.sign(
     payload,
@@ -14,9 +16,9 @@ export const generateToken = (
 
 export const verifyToken = (
   token: string
-) => {
+) : JwtUserPayload => {
   return jwt.verify(
     token,
     env.JWT_SECRET
-  );
+  ) as JwtUserPayload;
 };

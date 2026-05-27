@@ -44,3 +44,14 @@ export const loginUserController =
     });
     }
   );
+
+export const getProfileController = asyncHandler(
+  async (req: Request, res: Response) => {
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Profile fetched successfully",
+      data: req.user!,
+    });
+  }
+);
