@@ -6,12 +6,11 @@ import Member from "../../database/models/Member.js";
 import Book from "../../database/models/Book.js";
 import Fine from "../../database/models/Fine.js";
 import Issue from "../../database/models/Issue.js";
-import MembershipPlan from "../../database/models/MembershipPlan.js"; // Adjust based on your model path
+import MembershipPlan from "../../database/models/MembershipPlan.js";
 
 import issueRepository from "./issue.repository.js";
 
 class IssueService {
-  // 1. BORROW BOOK METHOD (With Dynamic Plan Limits)
   async borrowBook(member_id: string, book_id: string) {
     const member = await Member.findByPk(member_id, {
       include: [
@@ -35,7 +34,6 @@ class IssueService {
       throw new AppError("No membership plan associated with this account", httpStatus.BAD_REQUEST);
     }
 
-    // Dynamic book checking limit from DB
     const allowedLimit = plan.max_books; 
     const planName = plan.plan_name || "Current";
 
@@ -91,7 +89,6 @@ class IssueService {
     return issue;
   }
 
-  // 2. RETURN BOOK METHOD (Restored)
   async returnBook(issue_id: string) {
     const issue = await issueRepository.findIssueById(issue_id);
 
@@ -138,7 +135,6 @@ class IssueService {
     return updatedIssue;
   }
 
-  // 3. GET MEMBER ISSUES METHOD (Restored)
   async getMemberIssues(member_id: string) {
     return issueRepository.getMemberIssues(member_id);
   }

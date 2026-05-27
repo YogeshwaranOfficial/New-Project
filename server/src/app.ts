@@ -3,27 +3,25 @@ import express, {
   type Request,
   type Response,
 } from "express";
-
 import cors from "cors";
-
 import helmet from "helmet";
-
 import morgan from "morgan";
-
 import cookieParser from "cookie-parser";
-
 import env from "./config/env.js";
-
 import notFoundHandler from "./middlewares/notFoundHandler.js";
-
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
-
 import routes from "./routes/index.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./docs/swagger/swagger.config.js";
 
 
 const app: Application = express();
 
-
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 /* -------------------------------------------------------------------------- */
 /*                                 MIDDLEWARES                                */
