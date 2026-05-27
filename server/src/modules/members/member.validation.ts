@@ -32,3 +32,17 @@ export const updateMemberValidation = z.object({
       .optional(),
   }),
 });
+
+export const getMembersQueryValidation = z.object({
+  query: z.object({
+    page: z.string().optional(),
+
+    limit: z.string().optional(),
+
+    search: z.string().optional(),
+
+    membership_status: z
+      .enum(["ACTIVE", "EXPIRED"])
+      .optional(),
+  }),
+});

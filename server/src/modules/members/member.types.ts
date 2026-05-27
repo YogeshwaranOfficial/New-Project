@@ -11,3 +11,10 @@ export interface UpdateMemberPayload {
   expiry_date?: string;
   membership_status?: "ACTIVE" | "EXPIRED";
 }
+
+export interface MemberQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  membership_status?: "ACTIVE" | "EXPIRED";
+}

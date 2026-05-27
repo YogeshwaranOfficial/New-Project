@@ -25,9 +25,22 @@ export const createMemberController =
   });
 
 export const getAllMembersController =
-  asyncHandler(async (_req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
+    const query = {
+      page: Number(req.query.page) || 1,
+
+      limit: Number(req.query.limit) || 10,
+
+      search: req.query.search as string,
+
+      membership_status:
+        req.query.membership_status as
+          | "ACTIVE"
+          | "EXPIRED",
+    };
+
     const result =
-      await getAllMembersService();
+      await getAllMembersService(query);
 
     sendResponse(res, {
       success: true,

@@ -13,6 +13,7 @@ import {
 import {
   CreateMemberPayload,
   UpdateMemberPayload,
+  MemberQuery
 } from "./member.types.js";
 
 export const createMemberService = async (
@@ -21,8 +22,34 @@ export const createMemberService = async (
   return await createMemberRepository(payload);
 };
 
-export const getAllMembersService = async () => {
-  return await getAllMembersRepository();
+export const getAllMembersService = async (
+  query: MemberQuery
+) => {
+  const currentDate = new Date();
+
+  const members =
+    await getAllMembersRepository(query);
+
+  for (const member of members.rows) {
+    if (
+      member.expiry_date < currentDate &&
+      member.membership_status !== "EXPIRED"
+    ) {
+      await member.update({
+        membership_status: "EXPIRED",
+      });
+    }
+  }
+
+  return {
+    meta: {
+      total: members.count,
+      page: query.page || 1,
+      limit: query.limit || 10,
+    },
+
+    data: members.rows,
+  };
 };
 
 export const getMemberByIdService = async (

@@ -14,6 +14,7 @@ import {
 import {
   createMemberValidation,
   updateMemberValidation,
+  getMembersQueryValidation
 } from "./member.validation.js";
 
 const router = Router();
@@ -48,6 +49,13 @@ router.delete(
   "/:id",
   auth,
   deleteMemberController
+);
+
+router.get(
+  "/",
+  auth,
+  validate(getMembersQueryValidation),
+  getAllMembersController
 );
 
 export default router;
