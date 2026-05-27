@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op,CreationAttributes } from "sequelize";
 
 import Book from "../../database/models/Book.js";
 import Category from "../../database/models/Category.js";
@@ -11,9 +11,9 @@ import {
 class BookRepository {
   async createBook(payload: CreateBookPayload) {
     return Book.create({
-      ...payload as any,
+      ...payload,
       available_copies: payload.total_copies,
-    });
+    } as CreationAttributes<Book>);
   }
 
   async getBooks(

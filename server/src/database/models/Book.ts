@@ -3,6 +3,7 @@ import {
   InferAttributes,
   InferCreationAttributes,
   Model,
+  CreationOptional
 } from "sequelize";
 
 import sequelize from "../connection/database.js";
@@ -23,11 +24,9 @@ class Book extends Model<
 
   declare available_copies:number;
 
-  declare lending_count: number;
-
-  declare readonly created_at: Date;
-
-  declare readonly updated_at: Date;
+  declare lending_count: CreationOptional<number>; // Defaults to 0 in database
+  declare readonly created_at: CreationOptional<Date>; // Handled by timestamps
+  declare readonly updated_at: CreationOptional<Date>;
 }
 
 Book.init(
