@@ -17,6 +17,7 @@ import rateLimiter from "./config/ratelimiter.js";
 import helmetConfig from "./config/helmet.js";
 import corsConfig from "./config/cors.js";
 import "./config/validateEnv.js";
+import './database/associations/index.js';
 
 const app: Application = express();
 

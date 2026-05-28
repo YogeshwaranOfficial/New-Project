@@ -1,7 +1,11 @@
 import { Sequelize } from "sequelize";
+import cls from 'cls-hooked';
 import dotenv from "dotenv";
 
 dotenv.config();
+
+const namespace = cls.createNamespace('sequelize-test-namespace');
+(Sequelize as any).useCLS(namespace);
 
 const sequelize = new Sequelize(
   process.env.DB_NAME!,
