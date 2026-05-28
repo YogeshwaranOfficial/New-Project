@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - develop
-
   pull_request:
     branches:
       - main
@@ -14,6 +13,13 @@ on:
 jobs:
   backend-ci:
     runs-on: ubuntu-latest
+
+    # Global dummy variables satisfy validateEnv.ts during compilation & unit testing
+    env:
+      PORT: 3000
+      NODE_ENV: test
+      JWT_SECRET: ci_environment_mock_secret_key_string
+      DATABASE_URL: postgresql://mock_user:mock_password@localhost:5432/mock_db
 
     defaults:
       run:
@@ -25,15 +31,16 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-
         with:
           node-version: 22
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run TypeScript Build
         run: npm run build
 
-      - name: Run Tests
-        run: npm run test
+      - name: Run Unit Tests
+        run: npm run test:unit
