@@ -15,6 +15,8 @@ class User extends Model<InferAttributes<User>,  InferCreationAttributes<User> >
   declare readonly created_at: Date;
 
   declare readonly updated_at: Date;
+
+  declare role: string;
 }
 
 User.init(
@@ -63,6 +65,13 @@ User.init(
       type: DataTypes.DATE,
 
       defaultValue: DataTypes.NOW,
+    },
+    role: {
+      type: DataTypes.STRING,
+
+      allowNull: false,
+      
+      defaultValue: "LIBRARIAN",
     },
   },
 

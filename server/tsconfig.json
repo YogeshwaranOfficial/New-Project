@@ -32,7 +32,7 @@
 
     "declarationMap": true,
 
-    "types": ["node"],
+    "types": ["node","jest"],
 
     "allowSyntheticDefaultImports": true,
 

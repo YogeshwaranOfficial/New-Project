@@ -3,6 +3,7 @@ import {
   InferAttributes,
   InferCreationAttributes,
   Model,
+  CreationOptional,
 } from "sequelize";
 
 import sequelize from "../connection/database.js";
@@ -11,21 +12,24 @@ class Member extends Model<
   InferAttributes<Member>,
   InferCreationAttributes<Member>
 > {
-  declare member_id: string;
+ 
+  declare member_id: CreationOptional<string>;
 
   declare user_id: string;
 
   declare membership_plan_id: string;
 
+  
   declare start_date: Date;
 
   declare expiry_date: Date;
 
-  declare membership_status: string;
+  
+  declare membership_status: CreationOptional<"ACTIVE" | "EXPIRED">;
 
-  declare readonly created_at: Date;
+  declare readonly created_at: CreationOptional<Date>;
 
-  declare readonly updated_at: Date;
+  declare readonly updated_at: CreationOptional<Date>;
 }
 
 Member.init(
