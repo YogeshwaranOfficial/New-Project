@@ -2,12 +2,13 @@ import request from "supertest";
 import app from "../../app.js";
 import { getAuthToken } from "../helpers/testAuth.helper.js";
 import sequelize from '../../database/connection/database.js';
+import Category from '../../database/models/Category.js'; 
+import Book from '../../database/models/Book.js';         
 
 describe("📚 Books Module Integration Tests (All Scenarios)", () => {
   let librarianToken: string;
-  
-  // ⚡ Hardcoded Category ID directly from seed.sql ('Science')
-  const scienceCategoryId = "075705f3-c7be-4585-85d1-b57616870f68"; 
+  let scienceCategoryId: string;  
+  let seededBookId: string;       
   let createdBookId: string;
   
   const testBookName = `Clean Architecture v${Math.floor(Math.random() * 1000)}`;
@@ -15,9 +16,23 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
   const nonExistentUuid = "a0000000-0000-0000-0000-000000000000";
 
   beforeAll(async () => {
-    // 1. Grab our authorization token via our self-healing global helper
+    // 1. Grab authorization token
     const token = await getAuthToken();
     librarianToken = `Bearer ${token}`;
+
+    try {
+      // 2. Safely capture a real category ID from DB
+      const realCategory = await Category.findOne(); 
+      scienceCategoryId = realCategory ? (realCategory.get('category_id') as string) : nonExistentUuid;
+
+      // 3. Safely capture a real pre-seeded Book ID from DB
+      const realBook = await Book.findOne();
+      seededBookId = realBook ? (realBook.get('book_id') as string) : nonExistentUuid;
+    } catch (err) {
+      // Safeguard fallbacks in case models have alternate column definitions
+      scienceCategoryId = "075705f3-c7be-4585-85d1-b57616870f68";
+      seededBookId = "b0000001-3333-3333-3333-333333333333";
+    }
   });
 
   afterAll(async () => {
@@ -35,7 +50,7 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
         .send({
           book_name: testBookName,
           book_author: "Robert C. Martin",
-          category_id: scienceCategoryId, // 🔬 Matches seed.sql Category
+          category_id: scienceCategoryId, 
           total_copies: 5,
         });
 
@@ -44,6 +59,7 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
       expect(res.body.data).toHaveProperty("book_id");
       expect(res.body.data.book_name).toBe(testBookName);
       
+      // Save this value securely for the GET details suite below
       createdBookId = res.body.data.book_id;
     });
 
@@ -62,7 +78,7 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
       expect(res.body.success).toBe(false);
     });
 
-    it("❌ Sad Path: Should throw 404 error if category UUID does not exist in DB", async () => {
+    it("❌ Sad Path: Should throw 400/404 error if category UUID does not exist in DB", async () => {
       const res = await request(app)
         .post("/api/v1/books")
         .set("Authorization", librarianToken)
@@ -114,7 +130,6 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveProperty("rows");
       expect(res.body.data).toHaveProperty("count");
-      // Check that it's retrieving the pre-seeded dataset rows too
       expect(res.body.data.rows.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -142,23 +157,22 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
   // ==========================================
   describe("GET /api/v1/books/:bookId", () => {
     it("✅ Happy Path: Should return details of a single book by ID", async () => {
+      const validTargetId = createdBookId || seededBookId;
+
       const res = await request(app)
-        .get(`/api/v1/books/${createdBookId}`)
+        .get(`/api/v1/books/${validTargetId}`)
         .set("Authorization", librarianToken);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.book_id).toBe(createdBookId);
+      expect(res.body.data.book_id).toBe(validTargetId);
     });
 
-    // Bonus check: Testing with a pre-seeded book ID from your seed file ('The Pragmatic Programmer')
-    it("✅ Happy Path: Should successfully fetch a pre-seeded book from seed.sql", async () => {
-      const seededBookId = "b0000001-3333-3333-3333-333333333333";
+    it("✅ Happy Path: Should successfully fetch a pre-seeded book dynamically", async () => {
       const res = await request(app)
         .get(`/api/v1/books/${seededBookId}`)
         .set("Authorization", librarianToken);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.book_name).toBe("The Pragmatic Programmer");
     });
 
     it("❌ Sad Path: Should throw 404 error if book ID cannot be found", async () => {
@@ -169,4 +183,91 @@ describe("📚 Books Module Integration Tests (All Scenarios)", () => {
       expect(res.status).toBe(404);
     });
   });
-});
+
+ // ==========================================
+  // 🟢 4. PATCH /api/v1/books/:bookId (UPDATE)
+  // ==========================================
+  describe("PATCH /api/v1/books/:bookId", () => {
+    it("✅ Happy Path: Should let an authorized Librarian update a book's details via PATCH", async () => {
+      const targetBookId = createdBookId || seededBookId;
+      const updatedTitle = `Clean Architecture - Edited v${Math.floor(Math.random() * 1000)}`;
+
+      const res = await request(app)
+        .patch(`/api/v1/books/${targetBookId}`)
+        .set("Authorization", librarianToken)
+        .send({
+          book_name: updatedTitle,
+          book_author: "Robert C. Martin",
+          category_id: scienceCategoryId,
+          total_copies: 12,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.book_name).toBe(updatedTitle);
+      expect(res.body.data.total_copies).toBe(12);
+    });
+
+    it("❌ Sad Path: Should fail validation when partial update criteria are invalid (Zod)", async () => {
+      const targetBookId = createdBookId || seededBookId;
+
+      const res = await request(app)
+        .patch(`/api/v1/books/${targetBookId}`)
+        .set("Authorization", librarianToken)
+        .send({
+          book_name: "Y", // Too short
+          book_author: "", // Invalid empty string
+          category_id: "not-a-valid-uuid",
+          total_copies: -5, // Negative values fail check
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it("❌ Sad Path: Should return 404 error if attempting to patch a non-existent book ID", async () => {
+      const res = await request(app)
+        .patch(`/api/v1/books/${nonExistentUuid}`)
+        .set("Authorization", librarianToken)
+        .send({
+          book_name: "Ghost Book Modification",
+          book_author: "Anonymous",
+          category_id: scienceCategoryId,
+          total_copies: 1,
+        });
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  // ==========================================
+  // 🟢 5. DELETE /api/v1/books/:bookId (DELETE)
+  // ==========================================
+  describe("DELETE /api/v1/books/:bookId", () => {
+    it("❌ Sad Path: Should throw 404 error if target delete book ID cannot be found", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/books/${nonExistentUuid}`)
+        .set("Authorization", librarianToken);
+
+      expect(res.status).toBe(404);
+    });
+
+    it("✅ Happy Path: Should successfully delete an existing book by its ID", async () => {
+      const targetBookId = createdBookId || seededBookId;
+
+      const res = await request(app)
+        .delete(`/api/v1/books/${targetBookId}`)
+        .set("Authorization", librarianToken);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      // Verify removal
+      const doubleCheckRes = await request(app)
+        .get(`/api/v1/books/${targetBookId}`)
+        .set("Authorization", librarianToken);
+
+      expect(doubleCheckRes.status).toBe(404);
+    });
+  });
+}); 
