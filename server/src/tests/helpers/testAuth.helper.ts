@@ -9,5 +9,9 @@ export const getAuthToken = async (): Promise<string> => {
       password: "Password@123",
     });
 
+    if (response.status !== 200) {
+    throw new Error(`Failed to authenticate test user: ${JSON.stringify(response.body)}`);
+  }
+
   return response.body.data?.token || "";
 };
